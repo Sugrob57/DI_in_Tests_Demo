@@ -1,11 +1,6 @@
 using FluentAssertions;
-using MyService.AdminApi;
-using MyService.Common;
 using MyService.Common.HttpClient;
 using MyService.Common.Models;
-using MyService.Common.Services;
-using MyService.PaymentsApi;
-using MyService.UserApi;
 
 namespace MyService.IntegrationTests.Tests
 {
@@ -16,13 +11,7 @@ namespace MyService.IntegrationTests.Tests
         [SetUp]
         public void Setup()
         {
-			IRestHttpClient httpClient = new RestHttpClient();
-			IAdminApi adminApi = new MyServiceAdminApi(httpClient, MyServiceUrl);
-			User = adminApi.CreateUser();
-
-			IRestHttpClient httpClient2 = new RestHttpClient();
-			IUserApi userApi = new MyServiceUserApi(httpClient2, MyServiceUrl);
-			Session = userApi.Login(User);
+			UsersTestService.CreateUserAndLogin();
 		}
 
 		[Test]
@@ -35,9 +24,9 @@ namespace MyService.IntegrationTests.Tests
 			var sum = 100.500;
 
 			// act
-			var result = LoginAndCreateOrderAndPay(sum, currency);
+			var result = PaymentsTestService.LoginAndCreateOrderAndPay(sum, currency);
 
-			// accept
+			// assert
 			result.IsSuccess.Should().BeTrue("Existent order can be paid");
 		}
 
@@ -47,9 +36,9 @@ namespace MyService.IntegrationTests.Tests
 		public void PayApi_PayInEuro_PaymentSucced(double sum)
 		{
 			// act
-			var result = LoginAndCreateOrderAndPay(sum);
+			var result = PaymentsTestService.LoginAndCreateOrderAndPay(sum, "EUR");
 
-			// accept
+			// assert
 			result.IsSuccess.Should().BeTrue("Order can be paid with euro");
 		}
 
@@ -57,15 +46,14 @@ namespace MyService.IntegrationTests.Tests
         public void PayApi_SendTwoRequestsBySession_OnlyOneRequestAccepted()
         {
 			// arrange
-			IRestHttpClient httpClient = new RestHttpClient();
-			IPaymentsApi payApi = new MyServicePaymentsApi(httpClient, MyServiceUrl);
+			var payApi = PaymentsApi;
 
 			// act
 			Action act1 = () => payApi.PayOrder(111, Session.BearerToken, new PayRequest());
 			Action act2 = () => payApi.PayOrder(222, Session.BearerToken, new PayRequest());
 
 
-			// accept
+			// assert
 			act1.Should().NotThrow("First request should be accepted");
 			act2.Should().Throw<RestHttpClientException>("Only one request by session can be accepted");
 		}
@@ -74,35 +62,22 @@ namespace MyService.IntegrationTests.Tests
 		public void PayApi_SendRequestsByDifferentSession_AllRequestsAccepted()
 		{
 			// arrange
-			IRestHttpClient httpClient1 = new RestHttpClient();
-			IPaymentsApi payApi1 = new MyServicePaymentsApi(httpClient1, MyServiceUrl);
-
-			IRestHttpClient httpClient2 = new RestHttpClient();
-			IPaymentsApi payApi2 = new MyServicePaymentsApi(httpClient2, MyServiceUrl);
+			var payApi1 = PaymentsApi;
+			var payApi2 = PaymentsApi;
 
 			// act
 			Action act1 = () => payApi1.PayOrder(111, Session.BearerToken, new PayRequest());
 			Action act2 = () => payApi2.PayOrder(222, Session.BearerToken, new PayRequest());
 
-
-			// accept
+			// assert
 			act1.Should().NotThrow("First request should be accepted");
 			act2.Should().NotThrow("First request should be accepted"); ;
 		}
 
-		[TearDown]
-		public void CleanUp()
-		{
-			IRestHttpClient httpClient = new RestHttpClient();
-            IAdminApi adminApi = new MyServiceAdminApi(httpClient, MyServiceUrl);
-
-            adminApi.DeleteUser(User.Login);
-		}
-
 		protected UserSession Session
 		{
-			get => MyTestContext.GetProperty<UserSession>(nameof(Session));
-			set => MyTestContext.SetProperty(nameof(Session), value);
+			get => TestContext.GetProperty<UserSession>(nameof(Session));
+			set => TestContext.SetProperty(nameof(Session), value);
 		}
 	}
 }

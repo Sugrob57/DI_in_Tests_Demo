@@ -13,7 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+		<PackageReference Include="Castle.Windsor" Version="5.1.2" />
     <PackageReference Include="FluentAssertions" Version="6.10.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="7.0.0" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
     <PackageReference Include="NUnit" Version="3.13.3" />
@@ -25,7 +28,14 @@
     <ProjectReference Include="..\..\Services\MyService.AdminApi\MyService.AdminApi.csproj" />
     <ProjectReference Include="..\..\Services\MyService.Common\MyService.Common.csproj" />
     <ProjectReference Include="..\..\Services\MyService.PaymentsApi\MyService.PaymentsApi.csproj" />
+    <ProjectReference Include="..\..\Services\MyService.TestServices\MyService.TestServices.csproj" />
     <ProjectReference Include="..\..\Services\MyService.UserApi\MyService.UserApi.csproj" />
   </ItemGroup>
+
+		<ItemGroup>
+				<Content Include="..\..\commonAppSettings.json" Link="commonAppSettings.json">
+						<CopyToOutputDirectory>Always</CopyToOutputDirectory>
+				</Content>
+		</ItemGroup>
 
 </Project>

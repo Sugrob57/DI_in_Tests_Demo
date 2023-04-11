@@ -1,4 +1,6 @@
-﻿using NUnit.Framework.Internal;
+﻿using MyService.Common.Models;
+using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace MyService.Common.Services
 {

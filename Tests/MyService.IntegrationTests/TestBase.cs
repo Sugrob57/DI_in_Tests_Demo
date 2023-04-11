@@ -1,74 +1,54 @@
-﻿using MyService.AdminApi;
-using MyService.Common;
+﻿using Castle.MicroKernel.Lifestyle;
+using Castle.Windsor;
+using MyService.AdminApi;
 using MyService.Common.Models;
-using MyService.Common.Services;
+using MyService.IntegrationTests.DI;
 using MyService.PaymentsApi;
+using MyService.TestServices.Services;
 using MyService.UserApi;
 
 namespace MyService.IntegrationTests
 {
     public abstract class TestBase
 	{
-		protected IUserApi CreateUserAndLogin()
+		[SetUp]
+		public void SetUp()
 		{
-			IRestHttpClient httpClient = new RestHttpClient();
-			IAdminApi adminApi = new MyServiceAdminApi(httpClient, MyServiceUrl);
-			User = adminApi.CreateUser();
-
-			IRestHttpClient httpClient2 = new RestHttpClient();
-			return new MyServiceUserApi(httpClient2, MyServiceUrl);
+			TestScope = Container.BeginScope();
 		}
 
-		protected PayResult LoginAndCreateOrderAndPay(double sum, string currency)
+		[TearDown]
+		public void TearDown()
 		{
-			IRestHttpClient httpClient = new RestHttpClient();
-			IUserApi userApi = new MyServiceUserApi(httpClient, MyServiceUrl);
-			var token = userApi.Login(User).BearerToken;
-
-			IRestHttpClient httpClient2 = new RestHttpClient();
-			IPaymentsApi payApi = new MyServicePaymentsApi(httpClient2, MyServiceUrl);
-
-			var order = userApi.CreateOrder();
-
-			var payRequest = new PayRequest
-			{
-				Sum = sum,
-				Сurrency = currency,
-			};
-
-			var payResult = payApi.PayOrder(order.Id, token, payRequest);
-
-			return payResult;
+			TestScope.Dispose();
 		}
 
-		protected PayResult LoginAndCreateOrderAndPay(double sumInEuro)
-		{
-			IRestHttpClient httpClient = new RestHttpClient();
-			IUserApi userApi = new MyServiceUserApi(httpClient, MyServiceUrl);
-			var token = userApi.Login(User).BearerToken;
+		protected IAdminApi AdminApi => Container.Resolve<IAdminApi>();
 
-			IRestHttpClient httpClient2 = new RestHttpClient();
-			IPaymentsApi payApi = new MyServicePaymentsApi(httpClient2, MyServiceUrl);
+		protected IUserApi UserApi => Container.Resolve<IUserApi>();
 
-			var order = userApi.CreateOrder();
+		protected IPaymentsApi PaymentsApi => Container.Resolve<IPaymentsApi>();
 
-			var payRequest = new PayRequest
-			{
-				Sum = sumInEuro,
-				Сurrency = "Euro",
-			};
+		protected UsersTestService UsersTestService => Container.Resolve<UsersTestService>();
 
-			var payResult = payApi.PayOrder(order.Id, token, payRequest);
+		protected PaymentsTestService PaymentsTestService => Container.Resolve<PaymentsTestService>();
 
-			return payResult;
-		}
+		protected TestContextService TestContext => Container.Resolve<TestContextService>();
 
 		protected UserInfo User
 		{
-			get => MyTestContext.GetProperty<UserInfo>(nameof(User));
-			set => MyTestContext.SetProperty(nameof(User), value);
+			get => TestContext.GetProperty<UserInfo>(nameof(User));
+			set => TestContext.SetProperty(nameof(User), value);
 		}
 
-		protected string MyServiceUrl = "http://localhost:9091";
+		protected IDisposable TestScope
+		{
+			get => TestContext.GetProperty<IDisposable>(nameof(TestScope));
+			set => TestContext.SetProperty(nameof(TestScope), value);
+		}
+
+		protected IWindsorContainer Container => _container ??= new ContainerInitializer().GetContainer();
+
+		private static IWindsorContainer _container;
 	}
 }

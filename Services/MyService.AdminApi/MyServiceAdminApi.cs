@@ -5,10 +5,10 @@ namespace MyService.AdminApi
 {
     public class MyServiceAdminApi :IAdminApi
 	{
-		public MyServiceAdminApi(IRestHttpClient httpCleint, string baseUrl)
+		public MyServiceAdminApi(IRestHttpClient httpCleint, IApplicationConfiguration configuration)
 		{
 			_client = httpCleint;
-			_baseUrl = baseUrl;
+			_baseUrl = configuration.GetAppSettingValue(ConfigSettingNames.MyServiceUrl);
 		}
 
 		public UserInfo CreateUser()
