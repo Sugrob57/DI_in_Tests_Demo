@@ -9,7 +9,7 @@ cd /d "%CMDHOME%\Services\MyServiceSample\bin\Debug\WireMock.Server\net6.0\"
 dotnet MyService.Sample.dll
 cd "%CMDHOME%"
 ) else (
-@echo Build DIDemo.sln and then run the program
+@echo Build DIDemoTestProject.sln and then run the program
 )
 
 TIMEOUT /T 60
