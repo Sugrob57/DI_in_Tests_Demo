@@ -4,12 +4,12 @@ using MyService.Common.Services;
 
 namespace MyService.UserApi
 {
-    public class MyServiceUserApi : IUserApi
+    public class MyServiceUserApi : IUserApi, IDisposable
 	{
-		public MyServiceUserApi(IRestHttpClient httpCleint, string baseUrl)
+		public MyServiceUserApi(IRestHttpClient httpCleint, IApplicationConfiguration configuration)
 		{
 			_client = httpCleint;
-			_baseUrl = baseUrl;
+			_baseUrl = configuration.GetAppSettingValue(ConfigSettingNames.MyServiceUrl);
 		}
 
 		public UserSession Login(UserInfo user)
@@ -37,6 +37,11 @@ namespace MyService.UserApi
 		public void Logout()
 		{
 			_client.Delete($"{BaseUrl}/logout");
+		}
+
+		void IDisposable.Dispose()
+		{
+			Logout();
 		}
 
 		public string BaseUrl => $"{_baseUrl}/user";

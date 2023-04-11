@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\MyService.Common\MyService.Common.csproj" />
+    <ProjectReference Include="..\MyService.PaymentsApi\MyService.PaymentsApi.csproj" />
+    <ProjectReference Include="..\MyService.UserApi\MyService.UserApi.csproj" />
+  </ItemGroup>
+
+</Project>
